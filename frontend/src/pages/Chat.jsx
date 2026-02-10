@@ -49,7 +49,9 @@ function Chat() {
 
   const setupSocket = () => {
     const user = JSON.parse(localStorage.getItem('user'))
-    const newSocket = io('http://localhost:5000')
+    // Get backend URL from environment or use default
+    const backendUrl = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000'
+    const newSocket = io(backendUrl)
     
     newSocket.on('connect', () => {
       newSocket.emit('join', user.id)
