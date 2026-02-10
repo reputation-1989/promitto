@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import toast from 'react-hot-toast'
 import api from '../utils/api'
 import './Auth.css'
 
@@ -8,7 +10,6 @@ function Login({ setAuth }) {
     identifier: '',
     password: ''
   })
-  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
@@ -18,7 +19,6 @@ function Login({ setAuth }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setError('')
     setLoading(true)
 
     try {
@@ -26,9 +26,10 @@ function Login({ setAuth }) {
       localStorage.setItem('token', response.data.token)
       localStorage.setItem('user', JSON.stringify(response.data.user))
       setAuth(true)
+      toast.success('🎉 Welcome back!', { duration: 2000 })
       navigate('/dashboard')
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.')
+      toast.error(err.response?.data?.message || 'Login failed. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -36,46 +37,94 @@ function Login({ setAuth }) {
 
   return (
     <div className="auth-container">
-      <div className="auth-card">
-        <h1 className="auth-title">Promitto</h1>
-        <p className="auth-subtitle">Welcome back</p>
+      {/* Animated Background */}
+      <div className="auth-bg">
+        <div className="gradient-orb orb-1"></div>
+        <div className="gradient-orb orb-2"></div>
+        <div className="gradient-orb orb-3"></div>
+      </div>
 
-        {error && <div className="error-message">{error}</div>}
+      <motion.div
+        className="auth-card glass-card"
+        initial={{ scale: 0.9, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, type: 'spring' }}
+      >
+        <motion.div
+          className="auth-logo"
+          animate={{ 
+            rotate: [0, 5, -5, 0],
+            scale: [1, 1.1, 1]
+          }}
+          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          💎
+        </motion.div>
+        
+        <h1 className="auth-title gradient-text">Promitto</h1>
+        <p className="auth-subtitle">Welcome back to your exclusive connection</p>
 
         <form onSubmit={handleSubmit}>
           <div className="input-group">
             <label>Email or Username</label>
-            <input
+            <motion.input
               type="text"
               name="identifier"
               value={formData.identifier}
               onChange={handleChange}
               placeholder="Enter your email or username"
               required
+              whileFocus={{ scale: 1.02 }}
+              className="premium-input"
             />
           </div>
 
           <div className="input-group">
             <label>Password</label>
-            <input
+            <motion.input
               type="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder="Enter your password"
+              placeholder="••••••••"
               required
+              whileFocus={{ scale: 1.02 }}
+              className="premium-input"
             />
           </div>
 
-          <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? 'Logging in...' : 'Login'}
-          </button>
+          <motion.button
+            type="submit"
+            className="btn-premium gradient-btn"
+            disabled={loading}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            {loading ? (
+              <span className="loading-dots">
+                <span>.</span><span>.</span><span>.</span>
+              </span>
+            ) : (
+              'Login'
+            )}
+          </motion.button>
         </form>
 
-        <p className="auth-link">
-          Don't have an account? <Link to="/signup">Sign up</Link>
-        </p>
-      </div>
+        <motion.p
+          className="auth-link"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
+          Don't have an account? <Link to="/signup" className="gradient-link">Sign up</Link>
+        </motion.p>
+
+        <div className="decorative-sparkles">
+          <span className="sparkle">✨</span>
+          <span className="sparkle">💫</span>
+          <span className="sparkle">⭐</span>
+        </div>
+      </motion.div>
     </div>
   )
 }
