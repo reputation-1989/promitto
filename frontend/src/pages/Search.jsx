@@ -1,18 +1,18 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import toast from 'react-hot-toast'
 import api from '../utils/api'
 import './Dashboard.css'
 
 function Search() {
   const [searchUsername, setSearchUsername] = useState('')
   const [searchResult, setSearchResult] = useState(null)
-  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
   const handleSearch = async (e) => {
     e.preventDefault()
-    setError('')
     setSearchResult(null)
     setLoading(true)
 
@@ -20,9 +20,10 @@ function Search() {
       const response = await api.get(`/connection/search/${searchUsername}`)
       if (response.data.available) {
         setSearchResult(response.data.user)
+        toast.success('✓ User found!')
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'User not found')
+      toast.error(err.response?.data?.message || 'User not found')
     } finally {
       setLoading(false)
     }
@@ -33,58 +34,118 @@ function Search() {
       await api.post('/connection/send-request', {
         recipientId: searchResult.id
       })
-      alert('Connection request sent!')
-      navigate('/dashboard')
+      toast.success('🎉 Connection request sent!')
+      setTimeout(() => {
+        navigate('/dashboard')
+      }, 1000)
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to send request')
+      toast.error(err.response?.data?.message || 'Failed to send request')
     }
   }
 
   return (
     <div className="dashboard">
-      <div className="dashboard-header">
-        <Link to="/dashboard" className="back-button">← Back</Link>
-        <h1>Search</h1>
-        <div style={{ width: '60px' }}></div>
+      {/* Animated Background */}
+      <div className="animated-bg">
+        <div className="gradient-orb orb-1"></div>
+        <div className="gradient-orb orb-2"></div>
+        <div className="gradient-orb orb-3"></div>
       </div>
 
+      {/* Header */}
+      <motion.div
+        className="dashboard-header"
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+      >
+        <div className="header-content glass-card">
+          <Link to="/dashboard" className="back-button glass-btn">←</Link>
+          <h1 className="logo-text">Search</h1>
+          <div style={{ width: '60px' }}></div>
+        </div>
+      </motion.div>
+
       <div className="container">
-        <div className="card">
+        <motion.div
+          className="card glass-card"
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
           <form onSubmit={handleSearch}>
             <div className="input-group">
-              <label>Search by Username</label>
-              <input
+              <label style={{ color: 'rgba(255, 255, 255, 0.95)' }}>🔍 Search by Username</label>
+              <motion.input
                 type="text"
                 value={searchUsername}
                 onChange={(e) => setSearchUsername(e.target.value)}
                 placeholder="Enter username"
                 required
+                whileFocus={{ scale: 1.02 }}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  border: '2px solid rgba(255, 255, 255, 0.2)',
+                  color: 'white'
+                }}
               />
             </div>
-            <button type="submit" className="btn btn-primary" disabled={loading}>
-              {loading ? 'Searching...' : 'Search'}
-            </button>
+            <motion.button
+              type="submit"
+              className="btn-premium gradient-btn"
+              disabled={loading}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              {loading ? 'Searching...' : '🔍 Search'}
+            </motion.button>
           </form>
-        </div>
-
-        {error && (
-          <div className="error-message">{error}</div>
-        )}
+        </motion.div>
 
         {searchResult && (
-          <div className="card">
-            <div className="search-result">
-              <div className="user-avatar large">
+          <motion.div
+            className="card glass-card"
+            initial={{ scale: 0.8, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 200 }}
+          >
+            <div className="search-result" style={{ textAlign: 'center' }}>
+              <motion.div
+                className="user-avatar-large glow"
+                style={{ margin: '0 auto 1.5rem' }}
+                whileHover={{ scale: 1.1, rotate: 5 }}
+              >
                 {searchResult.displayName[0]}
-              </div>
-              <h2>{searchResult.displayName}</h2>
-              <p className="username">@{searchResult.username}</p>
-              {searchResult.bio && <p className="bio">{searchResult.bio}</p>}
-              <button onClick={handleSendRequest} className="btn btn-primary" style={{ marginTop: '1rem' }}>
-                Send Connection Request
-              </button>
+              </motion.div>
+              
+              <h2 style={{ color: 'white', marginBottom: '0.5rem', fontWeight: '700' }}>
+                {searchResult.displayName}
+              </h2>
+              <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontWeight: '600', fontSize: '1rem', marginBottom: '1rem' }}>
+                @{searchResult.username}
+              </p>
+              
+              {searchResult.bio && (
+                <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontStyle: 'italic', marginBottom: '2rem' }}>
+                  {searchResult.bio}
+                </p>
+              )}
+              
+              <motion.button
+                onClick={handleSendRequest}
+                className="btn-premium gradient-btn"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                💌 Send Connection Request
+              </motion.button>
             </div>
-          </div>
+
+            <div className="decorative-elements">
+              <div className="sparkle sparkle-1">✨</div>
+              <div className="sparkle sparkle-2">💫</div>
+              <div className="sparkle sparkle-3">⭐</div>
+            </div>
+          </motion.div>
         )}
       </div>
     </div>
