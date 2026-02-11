@@ -1,152 +1,64 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
-import { AnimatePresence } from 'framer-motion'
-import { Toaster } from 'react-hot-toast'
-import { useState, useEffect } from 'react'
-import Login from './pages/Login'
-import Signup from './pages/Signup'
-import Dashboard from './pages/Dashboard'
-import Search from './pages/Search'
-import Chat from './pages/Chat'
-import Profile from './pages/Profile'
-import PageTransition from './components/PageTransition'
-import './styles/premium.css'
-
-function AnimatedRoutes({ isAuthenticated, setIsAuthenticated }) {
-  const location = useLocation()
-
-  return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route
-          path="/login"
-          element={
-            !isAuthenticated ? (
-              <PageTransition>
-                <Login setAuth={setIsAuthenticated} />
-              </PageTransition>
-            ) : (
-              <Navigate to="/dashboard" />
-            )
-          }
-        />
-        <Route
-          path="/signup"
-          element={
-            !isAuthenticated ? (
-              <PageTransition>
-                <Signup setAuth={setIsAuthenticated} />
-              </PageTransition>
-            ) : (
-              <Navigate to="/dashboard" />
-            )
-          }
-        />
-        <Route
-          path="/dashboard"
-          element={
-            isAuthenticated ? (
-              <PageTransition>
-                <Dashboard />
-              </PageTransition>
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
-        <Route
-          path="/search"
-          element={
-            isAuthenticated ? (
-              <PageTransition>
-                <Search />
-              </PageTransition>
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
-        <Route
-          path="/chat"
-          element={
-            isAuthenticated ? (
-              <PageTransition>
-                <Chat />
-              </PageTransition>
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            isAuthenticated ? (
-              <PageTransition>
-                <Profile setAuth={setIsAuthenticated} />
-              </PageTransition>
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
-        <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />
-      </Routes>
-    </AnimatePresence>
-  )
-}
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import { useState, useEffect } from 'react';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import Dashboard from './pages/Dashboard';
+import Search from './pages/Search';
+import Chat from './pages/Chat';
+import Profile from './pages/Profile';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user has token
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('token');
     if (token) {
-      setIsAuthenticated(true)
+      setIsAuthenticated(true);
     }
-    setLoading(false)
-  }, [])
+    setLoading(false);
+  }, []);
 
   if (loading) {
     return (
-      <div className="loading-screen">
-        <div className="float">
-          <h1 className="gradient-text" style={{ fontSize: '3rem', margin: 0 }}>Promitto</h1>
-        </div>
-        <div className="pulse" style={{ marginTop: '2rem' }}>
-          <div style={{ fontSize: '2rem' }}>💎</div>
+      <div className="min-h-screen flex items-center justify-center bg-dark-50">
+        <div className="text-center space-y-4">
+          <div className="text-7xl animate-float">💎</div>
+          <p className="text-dark-600 text-xl font-semibold">Loading Promitto...</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <Router>
       <Toaster
-        position="top-center"
+        position="bottom-right"
         toastOptions={{
           duration: 3000,
+          className: 'glass-card',
           style: {
-            background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(10px)',
-            color: '#1e293b',
-            padding: '16px 24px',
-            borderRadius: '12px',
-            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.15)',
-            border: '1px solid rgba(102, 126, 234, 0.2)'
-          },
-          success: {
-            iconTheme: {
-              primary: '#667eea',
-              secondary: 'white',
-            },
+            background: 'rgba(255, 255, 255, 0.05)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            color: '#fff',
+            padding: '16px 20px',
+            borderRadius: '16px',
           },
         }}
       />
-      <AnimatedRoutes isAuthenticated={isAuthenticated} setIsAuthenticated={setIsAuthenticated} />
+      <Routes>
+        <Route path="/login" element={!isAuthenticated ? <Login setAuth={setIsAuthenticated} /> : <Navigate to="/dashboard" />} />
+        <Route path="/signup" element={!isAuthenticated ? <Signup setAuth={setIsAuthenticated} /> : <Navigate to="/dashboard" />} />
+        <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />} />
+        <Route path="/search" element={isAuthenticated ? <Search /> : <Navigate to="/login" />} />
+        <Route path="/chat" element={isAuthenticated ? <Chat /> : <Navigate to="/login" />} />
+        <Route path="/profile" element={isAuthenticated ? <Profile setAuth={setIsAuthenticated} /> : <Navigate to="/login" />} />
+        <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />
+      </Routes>
     </Router>
-  )
+  );
 }
 
-export default App
+export default App;
