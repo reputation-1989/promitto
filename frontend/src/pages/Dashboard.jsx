@@ -10,7 +10,9 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
-  User2
+  User2,
+  MapPin,
+  Calendar
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import confetti from 'canvas-confetti';
@@ -112,6 +114,64 @@ function Dashboard() {
       </div>
     );
   }
+
+  const UserProfileCard = ({ user: profileUser }) => (
+    <div className="space-y-4">
+      {profileUser?.profilePicture ? (
+        <img 
+          src={profileUser.profilePicture} 
+          alt={profileUser.displayName}
+          className="w-24 h-24 mx-auto rounded-3xl object-cover shadow-glow-subtle"
+        />
+      ) : (
+        <Avatar name={profileUser?.displayName} size="2xl" />
+      )}
+      <div className="space-y-2 text-center">
+        <h3 className="text-3xl font-bold">{profileUser?.displayName}</h3>
+        <p className="text-text-tertiary text-lg">@{profileUser?.username}</p>
+      </div>
+      
+      {profileUser?.bio && (
+        <p className="text-text-secondary text-sm leading-relaxed text-center max-w-md mx-auto">
+          {profileUser.bio}
+        </p>
+      )}
+
+      <div className="flex flex-wrap justify-center gap-2">
+        {profileUser?.age && (
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-bg-subtle border border-border text-xs text-text-tertiary">
+            <Calendar className="w-3.5 h-3.5" />
+            {profileUser.age} years old
+          </div>
+        )}
+        {profileUser?.location?.city && (
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-bg-subtle border border-border text-xs text-text-tertiary">
+            <MapPin className="w-3.5 h-3.5" />
+            {profileUser.location.city}{profileUser.location.country && `, ${profileUser.location.country}`}
+          </div>
+        )}
+      </div>
+
+      {profileUser?.interests && profileUser.interests.length > 0 && (
+        <div className="space-y-3">
+          <p className="text-xs text-text-quaternary font-medium flex items-center justify-center gap-1">
+            <Heart className="w-3.5 h-3.5" />
+            Interests
+          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {profileUser.interests.map((interest, idx) => (
+              <span 
+                key={idx}
+                className="px-3 py-1.5 rounded-full bg-accent-purple/10 border border-accent-purple/20 text-accent-purple text-xs font-medium"
+              >
+                {interest}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="min-h-screen">
@@ -275,13 +335,7 @@ function Dashboard() {
                     <p className="text-text-secondary text-lg">Waiting for their response...</p>
                   </div>
                   
-                  <div className="flex flex-col items-center gap-6 py-6">
-                    <Avatar name={connectionStatus.pendingRequest.displayName} size="xl" />
-                    <div className="space-y-1">
-                      <h3 className="text-2xl font-bold">{connectionStatus.pendingRequest.displayName}</h3>
-                      <p className="text-text-tertiary text-lg">@{connectionStatus.pendingRequest.username}</p>
-                    </div>
-                  </div>
+                  <UserProfileCard user={connectionStatus.pendingRequest} />
                 </div>
               </Card>
             </motion.div>
@@ -311,15 +365,9 @@ function Dashboard() {
                     <p className="text-text-secondary text-xl">Someone wants to connect with you</p>
                   </div>
                   
-                  <div className="flex flex-col items-center gap-6 py-6">
-                    <Avatar name={connectionStatus.pendingRequest.displayName} size="2xl" />
-                    <div className="space-y-2">
-                      <h3 className="text-3xl font-bold">{connectionStatus.pendingRequest.displayName}</h3>
-                      <p className="text-text-tertiary text-xl">@{connectionStatus.pendingRequest.username}</p>
-                    </div>
-                  </div>
+                  <UserProfileCard user={connectionStatus.pendingRequest} />
                   
-                  <div className="flex gap-4">
+                  <div className="flex gap-4 pt-4">
                     <Button 
                       icon={<CheckCircle2 className="w-5 h-5" strokeWidth={2} />} 
                       size="lg" 
@@ -370,19 +418,9 @@ function Dashboard() {
                     <p className="text-text-secondary text-lg">Your exclusive connection is active</p>
                   </div>
                   
-                  <div className="flex flex-col items-center gap-6 py-6">
-                    <Avatar 
-                      name={connectionStatus.connectedTo.displayName} 
-                      size="2xl" 
-                      online={true}
-                    />
-                    <div className="space-y-2">
-                      <h3 className="text-3xl font-bold">{connectionStatus.connectedTo.displayName}</h3>
-                      <p className="text-text-tertiary text-lg">@{connectionStatus.connectedTo.username}</p>
-                    </div>
-                  </div>
+                  <UserProfileCard user={connectionStatus.connectedTo} />
                   
-                  <div className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-4 pt-4">
                     <Button 
                       icon={<MessageCircle className="w-5 h-5" strokeWidth={2} />}
                       size="lg"
