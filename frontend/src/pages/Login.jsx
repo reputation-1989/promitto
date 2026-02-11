@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mail, Lock, LogIn, Sparkles } from 'lucide-react';
+import { Mail, Lock, LogIn, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
 import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
+import { BackgroundEffects } from '../components/BackgroundEffects';
 
 function Login({ setAuth }) {
   const [formData, setFormData] = useState({ identifier: '', password: '' });
@@ -34,35 +36,18 @@ function Login({ setAuth }) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 p-4">
-      {/* Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className="absolute top-20 left-20 w-72 h-72 bg-primary-500/20 rounded-full blur-3xl"
-          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-          transition={{ duration: 8, repeat: Infinity }}
-        />
-        <motion.div
-          className="absolute bottom-20 right-20 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl"
-          animate={{ scale: [1.2, 1, 1.2], opacity: [0.3, 0.5, 0.3] }}
-          transition={{ duration: 8, repeat: Infinity, delay: 4 }}
-        />
-      </div>
+    <div className="min-h-screen flex items-center justify-center p-6">
+      <BackgroundEffects />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative z-10 w-full max-w-md"
+        className="relative z-10 w-full max-w-md space-y-8"
       >
         {/* Logo */}
-        <motion.div
-          className="text-center mb-8"
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: 'spring', stiffness: 200 }}
-        >
+        <div className="text-center">
           <motion.div
-            className="text-7xl mb-4 inline-block"
+            className="inline-block text-6xl mb-4"
             animate={{ 
               rotate: [0, 5, -5, 0],
               y: [0, -10, 0]
@@ -71,82 +56,79 @@ function Login({ setAuth }) {
           >
             💎
           </motion.div>
-          <h1 className="text-4xl font-bold text-gradient mb-2">Promitto</h1>
-          <p className="text-dark-600">Your exclusive connection awaits</p>
-        </motion.div>
+          <h1 className="text-display-md font-bold text-gradient-purple mb-2">Promitto</h1>
+          <p className="text-text-secondary">Your exclusive connection</p>
+        </div>
 
         {/* Login Card */}
-        <motion.div
-          className="glass-card p-8 space-y-6"
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-white mb-2">Welcome Back</h2>
-            <p className="text-dark-600">Login to your account</p>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-dark-700 mb-2">
-                Email or Username
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-500 w-5 h-5" />
-                <input
-                  type="text"
-                  name="identifier"
-                  value={formData.identifier}
-                  onChange={handleChange}
-                  placeholder="Enter your email or username"
-                  className="input-premium pl-11 text-white"
-                  required
-                />
-              </div>
+        <Card>
+          <div className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold mb-2">Welcome Back</h2>
+              <p className="text-text-tertiary text-sm">Login to your account</p>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-dark-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-500 w-5 h-5" />
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Enter your password"
-                  className="input-premium pl-11 text-white"
-                  required
-                />
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-2">
+                  Email or Username
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-text-quaternary w-5 h-5" />
+                  <input
+                    type="text"
+                    name="identifier"
+                    value={formData.identifier}
+                    onChange={handleChange}
+                    placeholder="Enter your email or username"
+                    className="input-premium pl-11"
+                    required
+                  />
+                </div>
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-2">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-text-quaternary w-5 h-5" />
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Enter your password"
+                    className="input-premium pl-11"
+                    required
+                  />
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                icon={<LogIn className="w-5 h-5" />}
+                loading={loading}
+                className="w-full"
+              >
+                {loading ? 'Logging in...' : 'Login'}
+              </Button>
+            </form>
+
+            <div className="text-center pt-4 border-t border-border">
+              <p className="text-text-tertiary text-sm">
+                Don't have an account?{' '}
+                <Link to="/signup" className="text-accent-purple hover:text-accent-purple/80 font-medium">
+                  Sign up
+                </Link>
+              </p>
             </div>
-
-            <Button
-              type="submit"
-              icon={<LogIn size={20} />}
-              loading={loading}
-              className="w-full"
-            >
-              {loading ? 'Logging in...' : 'Login'}
-            </Button>
-          </form>
-
-          <div className="text-center">
-            <p className="text-dark-600">
-              Don't have an account?{' '}
-              <Link to="/signup" className="text-primary-400 hover:text-primary-300 font-semibold">
-                Sign up
-              </Link>
-            </p>
           </div>
-        </motion.div>
+        </Card>
 
-        {/* Floating Sparkles */}
+        {/* Floating elements */}
         <motion.div
-          className="absolute -top-10 -right-10 text-4xl"
+          className="absolute -top-20 -right-20 text-4xl opacity-50"
           animate={{ 
             rotate: [0, 360],
             scale: [1, 1.2, 1]
@@ -156,7 +138,7 @@ function Login({ setAuth }) {
           ✨
         </motion.div>
         <motion.div
-          className="absolute -bottom-10 -left-10 text-4xl"
+          className="absolute -bottom-20 -left-20 text-4xl opacity-50"
           animate={{ 
             rotate: [360, 0],
             scale: [1, 1.2, 1]

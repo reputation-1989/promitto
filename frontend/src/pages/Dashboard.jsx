@@ -3,20 +3,22 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, 
-  User, 
   MessageCircle, 
-  Heart, 
-  Clock,
-  CheckCircle,
-  XCircle,
+  Zap,
+  Heart,
   Sparkles,
-  Zap
+  CheckCircle2,
+  XCircle,
+  ArrowRight,
+  User2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import confetti from 'canvas-confetti';
 import api from '../utils/api';
-import { Card, GradientCard } from '../components/ui/Card';
+import { Card, StatCard } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
+import { Avatar } from '../components/ui/Avatar';
+import { BackgroundEffects } from '../components/BackgroundEffects';
 
 function Dashboard() {
   const [user, setUser] = useState(null);
@@ -52,10 +54,10 @@ function Dashboard() {
         particleCount: 150,
         spread: 100,
         origin: { y: 0.6 },
-        colors: ['#a855f7', '#ec4899', '#8b5cf6']
+        colors: ['#8b5cf6', '#ec4899', '#3b82f6']
       });
       
-      toast.success('🎉 Connected! You can now chat!', { duration: 4000 });
+      toast.success('🎉 Connected! You can now chat!');
       fetchUserData();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to accept request');
@@ -87,78 +89,54 @@ function Dashboard() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-4">
+        <BackgroundEffects />
+        <motion.div
+          className="relative z-10 text-center"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+        >
           <motion.div
+            className="text-6xl mb-4"
             animate={{ rotate: 360 }}
             transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-            className="text-6xl"
           >
             💎
           </motion.div>
-          <p className="text-dark-600 text-lg">Loading your connection...</p>
-        </div>
+          <p className="text-text-secondary">Loading...</p>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50">
-      {/* Animated Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className="absolute top-0 left-0 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl"
-          animate={{
-            x: [0, 100, 0],
-            y: [0, 50, 0],
-          }}
-          transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        <motion.div
-          className="absolute bottom-0 right-0 w-96 h-96 bg-pink-500/10 rounded-full blur-3xl"
-          animate={{
-            x: [0, -100, 0],
-            y: [0, -50, 0],
-          }}
-          transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut', delay: 5 }}
-        />
-      </div>
+    <div className="min-h-screen">
+      <BackgroundEffects />
 
       {/* Header */}
-      <header className="relative z-10 border-b border-white/5 backdrop-blur-xl bg-dark-50/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
+      <header className="relative z-10 border-b border-border backdrop-premium">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="flex items-center justify-between h-16">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               className="flex items-center gap-3"
             >
-              <div className="text-4xl">💎</div>
+              <div className="text-3xl">💎</div>
               <div>
-                <h1 className="text-2xl font-bold text-gradient">Promitto</h1>
-                <p className="text-xs text-dark-600">Your exclusive connection</p>
+                <h1 className="text-xl font-bold text-gradient-purple">Promitto</h1>
+                <p className="text-xs text-text-quaternary">Exclusive connections</p>
               </div>
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-            >
-              <Link to="/profile">
-                <motion.div
-                  className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg shadow-glow cursor-pointer"
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  {user?.displayName?.[0]}
-                </motion.div>
-              </Link>
-            </motion.div>
+            <Link to="/profile">
+              <Avatar name={user?.displayName} size="md" />
+            </Link>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="relative z-10 max-w-4xl mx-auto px-6 py-16">
         <AnimatePresence mode="wait">
           {/* No Connection */}
           {connectionStatus?.connectionStatus === 'none' && (
@@ -167,47 +145,53 @@ function Dashboard() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="space-y-6"
+              className="space-y-8"
             >
-              <GradientCard gradient="purple" className="text-center">
+              {/* Hero Section */}
+              <div className="text-center space-y-6 py-12">
                 <motion.div
-                  className="text-7xl mb-4"
+                  className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-accent-purple-glow mb-6"
                   animate={{ 
                     y: [0, -10, 0],
                     rotate: [0, 5, -5, 0]
                   }}
                   transition={{ duration: 4, repeat: Infinity }}
                 >
-                  🔍
+                  <Search className="w-10 h-10 text-accent-purple" />
                 </motion.div>
-                <h2 className="text-3xl font-bold text-white mb-2">Ready to Connect</h2>
-                <p className="text-white/80 mb-8 text-lg">Find someone special and start your exclusive journey</p>
+                <h2 className="text-display-md font-bold text-balance">Ready to Connect</h2>
+                <p className="text-xl text-text-secondary max-w-lg mx-auto text-balance">
+                  Find someone special and start your exclusive journey together
+                </p>
                 <Button 
-                  icon={<Search size={20} />}
+                  icon={<Search className="w-5 h-5" />}
                   size="lg"
                   onClick={() => navigate('/search')}
                 >
                   Find Someone
                 </Button>
-              </GradientCard>
+              </div>
 
-              {/* Quick Stats */}
+              {/* Stats Grid */}
               <div className="grid grid-cols-3 gap-4">
-                <Card hover={false} className="text-center">
-                  <Zap className="w-8 h-8 mx-auto mb-2 text-yellow-400" />
-                  <p className="text-2xl font-bold text-white">1</p>
-                  <p className="text-dark-600 text-sm">Max Connections</p>
-                </Card>
-                <Card hover={false} className="text-center">
-                  <Heart className="w-8 h-8 mx-auto mb-2 text-pink-400" />
-                  <p className="text-2xl font-bold text-white">0</p>
-                  <p className="text-dark-600 text-sm">Active Connection</p>
-                </Card>
-                <Card hover={false} className="text-center">
-                  <Sparkles className="w-8 h-8 mx-auto mb-2 text-purple-400" />
-                  <p className="text-2xl font-bold text-white">∞</p>
-                  <p className="text-dark-600 text-sm">Possibilities</p>
-                </Card>
+                <StatCard 
+                  icon={<Zap className="w-6 h-6 text-yellow-400" />}
+                  value="1"
+                  label="Max Connections"
+                  delay={0.1}
+                />
+                <StatCard 
+                  icon={<Heart className="w-6 h-6 text-pink-400" />}
+                  value="0"
+                  label="Active"
+                  delay={0.2}
+                />
+                <StatCard 
+                  icon={<Sparkles className="w-6 h-6 text-purple-400" />}
+                  value="∞"
+                  label="Possibilities"
+                  delay={0.3}
+                />
               </div>
             </motion.div>
           )}
@@ -219,26 +203,27 @@ function Dashboard() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="space-y-6"
             >
-              <Card>
-                <div className="text-center">
+              <Card glow>
+                <div className="text-center space-y-6">
                   <motion.div
-                    className="text-6xl mb-4"
+                    className="text-6xl"
                     animate={{ rotate: [0, 360] }}
                     transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
                   >
                     ⏳
                   </motion.div>
-                  <h2 className="text-2xl font-bold text-white mb-2">Request Sent</h2>
-                  <p className="text-dark-600 mb-6">Waiting for their response...</p>
+                  <div>
+                    <h2 className="text-2xl font-bold mb-2">Request Sent</h2>
+                    <p className="text-text-secondary">Waiting for their response...</p>
+                  </div>
                   
-                  <div className="bg-white/5 rounded-2xl p-6 max-w-sm mx-auto">
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-500 to-pink-500 flex items-center justify-center text-white font-bold text-3xl mx-auto mb-4 shadow-glow">
-                      {connectionStatus.pendingRequest.displayName[0]}
+                  <div className="flex flex-col items-center gap-4 py-6">
+                    <Avatar name={connectionStatus.pendingRequest.displayName} size="xl" />
+                    <div>
+                      <h3 className="text-xl font-semibold">{connectionStatus.pendingRequest.displayName}</h3>
+                      <p className="text-text-tertiary">@{connectionStatus.pendingRequest.username}</p>
                     </div>
-                    <h3 className="text-xl font-bold text-white">{connectionStatus.pendingRequest.displayName}</h3>
-                    <p className="text-dark-600">@{connectionStatus.pendingRequest.username}</p>
                   </div>
                 </div>
               </Card>
@@ -252,41 +237,39 @@ function Dashboard() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="space-y-6"
             >
-              <GradientCard gradient="pink">
-                <div className="text-center">
+              <Card glow>
+                <div className="text-center space-y-6">
                   <motion.div
-                    className="text-6xl mb-4"
+                    className="text-6xl"
                     animate={{ scale: [1, 1.2, 1] }}
                     transition={{ duration: 1, repeat: Infinity }}
                   >
                     💌
                   </motion.div>
-                  <h2 className="text-3xl font-bold text-white mb-2">New Request!</h2>
-                  <p className="text-white/80 mb-6">Someone wants to connect with you</p>
-                  
-                  <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 max-w-sm mx-auto mb-6">
-                    <motion.div 
-                      className="w-24 h-24 rounded-full bg-gradient-to-br from-primary-400 to-pink-400 flex items-center justify-center text-white font-bold text-4xl mx-auto mb-4 shadow-glow-lg"
-                      whileHover={{ scale: 1.1, rotate: 5 }}
-                    >
-                      {connectionStatus.pendingRequest.displayName[0]}
-                    </motion.div>
-                    <h3 className="text-2xl font-bold text-white">{connectionStatus.pendingRequest.displayName}</h3>
-                    <p className="text-white/70 text-lg">@{connectionStatus.pendingRequest.username}</p>
+                  <div>
+                    <h2 className="text-3xl font-bold mb-2">New Request!</h2>
+                    <p className="text-text-secondary text-lg">Someone wants to connect with you</p>
                   </div>
                   
-                  <div className="flex gap-4 justify-center">
-                    <Button icon={<CheckCircle size={20} />} size="lg" onClick={handleAcceptRequest}>
+                  <div className="flex flex-col items-center gap-4 py-6">
+                    <Avatar name={connectionStatus.pendingRequest.displayName} size="2xl" />
+                    <div>
+                      <h3 className="text-2xl font-bold">{connectionStatus.pendingRequest.displayName}</h3>
+                      <p className="text-text-tertiary text-lg">@{connectionStatus.pendingRequest.username}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-3">
+                    <Button icon={<CheckCircle2 className="w-5 h-5" />} size="lg" onClick={handleAcceptRequest}>
                       Accept
                     </Button>
-                    <Button icon={<XCircle size={20} />} variant="secondary" size="lg" onClick={handleRejectRequest}>
+                    <Button icon={<XCircle className="w-5 h-5" />} variant="secondary" size="lg" onClick={handleRejectRequest}>
                       Decline
                     </Button>
                   </div>
                 </div>
-              </GradientCard>
+              </Card>
             </motion.div>
           )}
 
@@ -297,12 +280,11 @@ function Dashboard() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="space-y-6"
             >
-              <Card>
-                <div className="text-center">
+              <Card glow>
+                <div className="text-center space-y-8">
                   <motion.div
-                    className="text-6xl mb-4"
+                    className="text-6xl"
                     animate={{ 
                       rotate: [0, 10, -10, 0],
                       scale: [1, 1.1, 1]
@@ -311,37 +293,36 @@ function Dashboard() {
                   >
                     💝
                   </motion.div>
-                  <h2 className="text-3xl font-bold text-gradient mb-2">Connected</h2>
-                  <p className="text-dark-600 mb-8">Your exclusive connection is active</p>
+                  <div>
+                    <h2 className="text-3xl font-bold mb-2 text-gradient-purple">Connected</h2>
+                    <p className="text-text-secondary">Your exclusive connection is active</p>
+                  </div>
                   
-                  <div className="bg-gradient-to-br from-primary-500/20 to-pink-500/20 rounded-2xl p-8 max-w-sm mx-auto mb-6">
-                    <motion.div 
-                      className="relative w-28 h-28 rounded-full bg-gradient-to-br from-primary-400 to-pink-400 flex items-center justify-center text-white font-bold text-4xl mx-auto mb-4 shadow-glow-lg"
-                      whileHover={{ scale: 1.1, rotate: 5 }}
-                    >
-                      {connectionStatus.connectedTo.displayName[0]}
-                      <motion.div
-                        className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-4 border-dark-50"
-                        animate={{ scale: [1, 1.2, 1] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                      />
-                    </motion.div>
-                    <h3 className="text-2xl font-bold text-white">{connectionStatus.connectedTo.displayName}</h3>
-                    <p className="text-dark-500 text-lg">@{connectionStatus.connectedTo.username}</p>
+                  <div className="flex flex-col items-center gap-4 py-6">
+                    <Avatar 
+                      name={connectionStatus.connectedTo.displayName} 
+                      size="2xl" 
+                      online={true}
+                    />
+                    <div>
+                      <h3 className="text-2xl font-bold">{connectionStatus.connectedTo.displayName}</h3>
+                      <p className="text-text-tertiary">@{connectionStatus.connectedTo.username}</p>
+                    </div>
                   </div>
                   
                   <div className="flex flex-col gap-3">
                     <Button 
-                      icon={<MessageCircle size={20} />}
+                      icon={<MessageCircle className="w-5 h-5" />}
                       size="lg"
                       onClick={() => navigate('/chat')}
                     >
                       Open Chat
                     </Button>
                     <Button 
-                      variant="danger" 
+                      variant="ghost" 
                       size="md"
                       onClick={handleBreakConnection}
+                      className="text-red-400 hover:text-red-300"
                     >
                       End Connection
                     </Button>
