@@ -12,7 +12,8 @@ import {
   Clock,
   User2,
   MapPin,
-  Calendar
+  Calendar,
+  Lock
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import confetti from 'canvas-confetti';
@@ -115,7 +116,37 @@ function Dashboard() {
     );
   }
 
-  const UserProfileCard = ({ user: profileUser }) => (
+  // Basic user card - only name/username (for pending requests)
+  const BasicUserCard = ({ user: profileUser }) => (
+    <div className="space-y-4">
+      {profileUser?.profilePicture ? (
+        <img 
+          src={profileUser.profilePicture} 
+          alt={profileUser.displayName}
+          className="w-24 h-24 mx-auto rounded-3xl object-cover shadow-glow-subtle"
+        />
+      ) : (
+        <Avatar name={profileUser?.displayName} size="2xl" />
+      )}
+      <div className="space-y-2 text-center">
+        <h3 className="text-3xl font-bold">{profileUser?.displayName}</h3>
+        <p className="text-text-tertiary text-lg">@{profileUser?.username}</p>
+      </div>
+      
+      {/* Privacy notice for pending */}
+      <div className="max-w-md mx-auto mt-6">
+        <div className="flex items-start gap-3 p-4 bg-bg-subtle/50 border border-border rounded-xl text-left">
+          <Lock className="w-4 h-4 text-text-quaternary mt-0.5 flex-shrink-0" />
+          <p className="text-xs text-text-secondary leading-relaxed">
+            Their full profile will be visible after you connect
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Full profile card - with all details (only for connected users)
+  const ConnectedUserCard = ({ user: profileUser }) => (
     <div className="space-y-4">
       {profileUser?.profilePicture ? (
         <img 
@@ -302,9 +333,9 @@ function Dashboard() {
                   delay={0.6}
                 />
                 <StatCard 
-                  icon={<Sparkles className="w-5 h-5 text-purple-400" strokeWidth={2} />}
-                  value="∞"
-                  label="Possibilities"
+                  icon={<Lock className="w-5 h-5 text-purple-400" strokeWidth={2} />}
+                  value="100%"
+                  label="Privacy"
                   delay={0.7}
                 />
               </motion.div>
@@ -335,7 +366,7 @@ function Dashboard() {
                     <p className="text-text-secondary text-lg">Waiting for their response...</p>
                   </div>
                   
-                  <UserProfileCard user={connectionStatus.pendingRequest} />
+                  <BasicUserCard user={connectionStatus.pendingRequest} />
                 </div>
               </Card>
             </motion.div>
@@ -365,7 +396,7 @@ function Dashboard() {
                     <p className="text-text-secondary text-xl">Someone wants to connect with you</p>
                   </div>
                   
-                  <UserProfileCard user={connectionStatus.pendingRequest} />
+                  <BasicUserCard user={connectionStatus.pendingRequest} />
                   
                   <div className="flex gap-4 pt-4">
                     <Button 
@@ -391,7 +422,7 @@ function Dashboard() {
             </motion.div>
           )}
 
-          {/* Connected */}
+          {/* Connected - FULL PROFILE NOW VISIBLE */}
           {connectionStatus?.connectionStatus === 'connected' && connectionStatus?.connectedTo && (
             <motion.div
               key="connected"
@@ -418,7 +449,7 @@ function Dashboard() {
                     <p className="text-text-secondary text-lg">Your exclusive connection is active</p>
                   </div>
                   
-                  <UserProfileCard user={connectionStatus.connectedTo} />
+                  <ConnectedUserCard user={connectionStatus.connectedTo} />
                   
                   <div className="flex flex-col gap-4 pt-4">
                     <Button 
