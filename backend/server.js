@@ -26,6 +26,9 @@ const io = socketIo(server, {
   }
 });
 
+// Trust proxy for GitHub Codespaces / reverse proxy environments
+app.set('trust proxy', 1);
+
 // Security Middleware
 app.use(helmet());
 app.use(compression()); // Compress responses
