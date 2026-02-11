@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Send, Smile, MoreVertical, Image as ImageIcon } from 'lucide-react';
+import { clsx } from 'clsx';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
