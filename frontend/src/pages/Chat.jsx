@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Send, User } from 'lucide-react';
+import { ArrowLeft, Send, Loader2 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
-import { Button } from '../components/ui/Button';
+import { Avatar } from '../components/ui/Avatar';
+import { BackgroundEffects } from '../components/BackgroundEffects';
 
 function Chat() {
   const [messages, setMessages] = useState([]);
@@ -14,6 +15,7 @@ function Chat() {
   const [socket, setSocket] = useState(null);
   const [isTyping, setIsTyping] = useState(false);
   const [isOnline, setIsOnline] = useState(false);
+  const [sending, setSending] = useState(false);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const navigate = useNavigate();
@@ -94,9 +96,10 @@ function Chat() {
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() || sending) return;
 
     const user = JSON.parse(localStorage.getItem('user'));
+    setSending(true);
 
     try {
       const response = await api.post('/connection/message', { content: newMessage });
@@ -114,15 +117,18 @@ function Chat() {
       setNewMessage('');
     } catch (error) {
       toast.error('Failed to send message');
+    } finally {
+      setSending(false);
     }
   };
 
   if (!partner) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-dark-50">
-        <div className="text-center">
-          <div className="text-6xl mb-4 animate-spin">💬</div>
-          <p className="text-dark-600">Loading chat...</p>
+      <div className="min-h-screen flex items-center justify-center">
+        <BackgroundEffects />
+        <div className="relative z-10 text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-accent-purple mx-auto mb-4" />
+          <p className="text-text-secondary">Loading chat...</p>
         </div>
       </div>
     );
@@ -131,36 +137,27 @@ function Chat() {
   const user = JSON.parse(localStorage.getItem('user'));
 
   return (
-    <div className="h-screen flex flex-col bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50">
+    <div className="h-screen flex flex-col">
+      <BackgroundEffects />
+
       {/* Header */}
-      <header className="border-b border-white/5 backdrop-blur-xl bg-dark-50/50">
-        <div className="max-w-4xl mx-auto px-4 h-20 flex items-center justify-between">
+      <header className="relative z-10 border-b border-border backdrop-premium">
+        <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link to="/dashboard">
               <motion.div
-                className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 cursor-pointer"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
+                className="w-10 h-10 rounded-full bg-bg-elevated border border-border flex items-center justify-center hover:bg-bg-subtle cursor-pointer"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <ArrowLeft className="w-5 h-5 text-white" />
+                <ArrowLeft className="w-5 h-5" />
               </motion.div>
             </Link>
             <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-pink-500 flex items-center justify-center text-white font-bold text-lg">
-                  {partner.displayName[0]}
-                </div>
-                {isOnline && (
-                  <motion.div
-                    className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full border-2 border-dark-50"
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                )}
-              </div>
+              <Avatar name={partner.displayName} size="md" online={isOnline} />
               <div>
-                <h3 className="font-bold text-white">{partner.displayName}</h3>
-                <p className="text-sm text-dark-600">
+                <h3 className="font-semibold">{partner.displayName}</h3>
+                <p className="text-xs text-text-tertiary">
                   {isTyping ? 'typing...' : isOnline ? 'online' : '@' + partner.username}
                 </p>
               </div>
@@ -170,25 +167,25 @@ function Chat() {
       </header>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 max-w-4xl mx-auto w-full">
+      <div className="relative z-10 flex-1 overflow-y-auto px-6 py-6 max-w-4xl mx-auto w-full">
         <AnimatePresence>
           {messages.map((msg, index) => {
             const isOwn = msg.sender._id === user.id;
             return (
               <motion.div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className={`flex mb-4 ${isOwn ? 'justify-end' : 'justify-start'}`}
               >
-                <div className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ${
+                <div className={`max-w-xs lg:max-w-md px-4 py-2.5 rounded-2xl ${
                   isOwn
-                    ? 'bg-gradient-to-br from-primary-500 to-pink-500 text-white rounded-br-sm'
-                    : 'glass-card text-white rounded-bl-sm'
+                    ? 'bg-accent-purple text-white rounded-br-md'
+                    : 'bg-bg-elevated border border-border rounded-bl-md'
                 }`}>
                   <p className="text-sm">{msg.content}</p>
                   <p className={`text-xs mt-1 ${
-                    isOwn ? 'text-white/70' : 'text-dark-600'
+                    isOwn ? 'text-white/60' : 'text-text-quaternary'
                   }`}>
                     {new Date(msg.timestamp).toLocaleTimeString('en-US', {
                       hour: '2-digit',
@@ -204,7 +201,7 @@ function Chat() {
       </div>
 
       {/* Input */}
-      <div className="border-t border-white/5 backdrop-blur-xl bg-dark-50/50 p-4">
+      <div className="relative z-10 border-t border-border backdrop-premium p-4">
         <form onSubmit={handleSendMessage} className="max-w-4xl mx-auto flex gap-3">
           <input
             type="text"
@@ -214,16 +211,17 @@ function Chat() {
               handleTyping();
             }}
             placeholder="Type a message..."
-            className="input-premium flex-1 text-white"
+            className="input-premium flex-1"
+            disabled={sending}
           />
           <motion.button
             type="submit"
-            disabled={!newMessage.trim()}
-            className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500 to-pink-500 flex items-center justify-center text-white disabled:opacity-50"
+            disabled={!newMessage.trim() || sending}
+            className="w-12 h-12 rounded-xl bg-accent-purple flex items-center justify-center text-white disabled:opacity-50 shadow-glow-subtle hover:shadow-glow-medium"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <Send className="w-5 h-5" />
+            {sending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
           </motion.button>
         </form>
       </div>

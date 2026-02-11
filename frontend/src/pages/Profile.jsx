@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Mail, Phone, User, LogOut } from 'lucide-react';
+import { ArrowLeft, Mail, Phone, LogOut, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
+import { Avatar } from '../components/ui/Avatar';
+import { BackgroundEffects } from '../components/BackgroundEffects';
 
 function Profile({ setAuth }) {
   const [user, setUser] = useState(null);
@@ -40,73 +42,74 @@ function Profile({ setAuth }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-dark-50">
-        <div className="text-center">
-          <div className="text-6xl mb-4 animate-spin">👤</div>
-          <p className="text-dark-600">Loading profile...</p>
+      <div className="min-h-screen flex items-center justify-center">
+        <BackgroundEffects />
+        <div className="relative z-10 text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-accent-purple mx-auto mb-4" />
+          <p className="text-text-secondary">Loading profile...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50">
-      <header className="border-b border-white/5 backdrop-blur-xl bg-dark-50/50">
-        <div className="max-w-4xl mx-auto px-4 h-20 flex items-center gap-4">
+    <div className="min-h-screen">
+      <BackgroundEffects />
+
+      <header className="relative z-10 border-b border-border backdrop-premium">
+        <div className="max-w-4xl mx-auto px-6 h-16 flex items-center gap-4">
           <Link to="/dashboard">
             <motion.div
-              className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 cursor-pointer"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+              className="w-10 h-10 rounded-full bg-bg-elevated border border-border flex items-center justify-center hover:bg-bg-subtle cursor-pointer"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <ArrowLeft className="w-5 h-5 text-white" />
+              <ArrowLeft className="w-5 h-5" />
             </motion.div>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-white">Profile</h1>
-            <p className="text-sm text-dark-600">Your account details</p>
+            <h1 className="text-xl font-bold">Profile</h1>
+            <p className="text-xs text-text-tertiary">Your account details</p>
           </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-12 space-y-6">
+      <main className="relative z-10 max-w-4xl mx-auto px-6 py-12 space-y-6">
         <Card>
           <div className="text-center space-y-6">
             <motion.div
-              className="w-32 h-32 rounded-full bg-gradient-to-br from-primary-500 to-pink-500 flex items-center justify-center text-white font-bold text-5xl mx-auto shadow-glow-lg"
-              whileHover={{ scale: 1.1, rotate: 5 }}
               animate={{
-                boxShadow: [
-                  '0 0 30px rgba(168, 85, 247, 0.6)',
-                  '0 0 50px rgba(236, 72, 153, 0.8)',
-                  '0 0 30px rgba(168, 85, 247, 0.6)'
-                ]
+                scale: [1, 1.05, 1],
               }}
-              transition={{ duration: 2, repeat: Infinity }}
+              transition={{ duration: 3, repeat: Infinity }}
             >
-              {user?.displayName?.[0]}
+              <Avatar name={user?.displayName} size="2xl" />
             </motion.div>
             <div>
-              <h2 className="text-3xl font-bold text-white mb-1">{user?.displayName}</h2>
-              <p className="text-dark-600 text-lg">@{user?.username}</p>
+              <h2 className="text-3xl font-bold">{user?.displayName}</h2>
+              <p className="text-text-tertiary">@{user?.username}</p>
             </div>
           </div>
         </Card>
 
         <Card>
-          <div className="space-y-4">
-            <div className="flex items-center gap-4 p-4 bg-white/5 rounded-xl">
-              <Mail className="w-6 h-6 text-primary-400" />
+          <div className="space-y-3">
+            <div className="flex items-center gap-4 p-4 rounded-xl bg-bg-subtle border border-border">
+              <div className="w-10 h-10 rounded-xl bg-accent-purple-glow flex items-center justify-center">
+                <Mail className="w-5 h-5 text-accent-purple" />
+              </div>
               <div className="flex-1">
-                <p className="text-dark-600 text-sm">Email</p>
-                <p className="text-white font-semibold">{user?.email}</p>
+                <p className="text-xs text-text-tertiary">Email</p>
+                <p className="font-medium">{user?.email}</p>
               </div>
             </div>
-            <div className="flex items-center gap-4 p-4 bg-white/5 rounded-xl">
-              <Phone className="w-6 h-6 text-primary-400" />
+            <div className="flex items-center gap-4 p-4 rounded-xl bg-bg-subtle border border-border">
+              <div className="w-10 h-10 rounded-xl bg-accent-purple-glow flex items-center justify-center">
+                <Phone className="w-5 h-5 text-accent-purple" />
+              </div>
               <div className="flex-1">
-                <p className="text-dark-600 text-sm">Phone</p>
-                <p className="text-white font-semibold">
+                <p className="text-xs text-text-tertiary">Phone</p>
+                <p className="font-medium">
                   {user?.phoneNumbers?.find(p => p.isPrimary)?.number}
                 </p>
               </div>
@@ -115,10 +118,10 @@ function Profile({ setAuth }) {
         </Card>
 
         <Button
-          variant="danger"
-          icon={<LogOut size={20} />}
+          variant="ghost"
+          icon={<LogOut className="w-5 h-5" />}
           onClick={handleLogout}
-          className="w-full"
+          className="w-full text-red-400 hover:text-red-300 hover:bg-red-400/10"
         >
           Logout
         </Button>
