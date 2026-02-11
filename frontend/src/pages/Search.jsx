@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search as SearchIcon, ArrowLeft, Send, UserSearch } from 'lucide-react';
+import { Search as SearchIcon, ArrowLeft, Send, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
 import { Card } from '../components/ui/Card';
@@ -157,7 +157,7 @@ function Search() {
               exit={{ opacity: 0 }}
             >
               <EmptyState 
-                icon={<UserSearch className="w-10 h-10 text-accent-purple" strokeWidth={1.5} />}
+                icon={<User className="w-10 h-10 text-accent-purple" strokeWidth={1.5} />}
                 title="No results found"
                 description="Try searching with a different username"
               />
