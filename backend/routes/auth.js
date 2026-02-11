@@ -5,13 +5,25 @@ const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
-const twilio = require('twilio');
 
-// Twilio client setup
-const twilioClient = twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
+// Twilio client setup (optional for development)
+let twilioClient = null;
+const isDevelopment = process.env.NODE_ENV !== 'production';
+
+try {
+  if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
+    const twilio = require('twilio');
+    twilioClient = twilio(
+      process.env.TWILIO_ACCOUNT_SID,
+      process.env.TWILIO_AUTH_TOKEN
+    );
+    console.log('✅ Twilio configured successfully');
+  } else {
+    console.log('⚠️  Twilio not configured - using development mode (OTP: 123456)');
+  }
+} catch (error) {
+  console.log('⚠️  Twilio setup failed - using development mode:', error.message);
+}
 
 // Store OTP temporarily (in production, use Redis)
 const otpStore = new Map();
@@ -34,7 +46,7 @@ router.post(
 
     try {
       // Generate 6-digit OTP
-      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      const otp = isDevelopment && !twilioClient ? '123456' : Math.floor(100000 + Math.random() * 900000).toString();
       
       // Store OTP with 5 minute expiry
       otpStore.set(phoneNumber, {
@@ -42,14 +54,22 @@ router.post(
         expires: Date.now() + 5 * 60 * 1000
       });
 
-      // Send OTP via Twilio SMS
-      await twilioClient.messages.create({
-        body: `Your Promitto verification code is: ${otp}`,
-        from: process.env.TWILIO_PHONE_NUMBER,
-        to: phoneNumber
-      });
+      // Send OTP via Twilio SMS (or skip in development)
+      if (twilioClient) {
+        await twilioClient.messages.create({
+          body: `Your Promitto verification code is: ${otp}`,
+          from: process.env.TWILIO_PHONE_NUMBER,
+          to: phoneNumber
+        });
+        console.log(`📱 OTP sent to ${phoneNumber}: ${otp}`);
+      } else {
+        console.log(`🔧 Development mode - OTP for ${phoneNumber}: ${otp}`);
+      }
 
-      res.json({ message: 'OTP sent successfully' });
+      res.json({ 
+        message: 'OTP sent successfully',
+        ...(isDevelopment && !twilioClient && { devMode: true, otp: '123456' })
+      });
     } catch (error) {
       console.error('OTP send error:', error);
       res.status(500).json({ message: 'Failed to send OTP', error: error.message });
@@ -92,6 +112,7 @@ router.post(
 
       // OTP verified successfully
       otpStore.delete(phoneNumber);
+      console.log(`✅ OTP verified for ${phoneNumber}`);
       res.json({ message: 'OTP verified successfully', verified: true });
     } catch (error) {
       console.error('OTP verification error:', error);
@@ -171,6 +192,7 @@ router.post(
         { expiresIn: '30d' },
         (err, token) => {
           if (err) throw err;
+          console.log(`✅ New user signed up: ${username}`);
           res.json({
             token,
             user: {
@@ -243,6 +265,7 @@ router.post(
         { expiresIn: '30d' },
         (err, token) => {
           if (err) throw err;
+          console.log(`✅ User logged in: ${user.username}`);
           res.json({
             token,
             user: {
