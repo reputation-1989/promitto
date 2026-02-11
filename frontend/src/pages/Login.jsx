@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
 import api from '../utils/api'
-import './Auth.css'
 
 function Login({ setAuth }) {
   const [formData, setFormData] = useState({
@@ -26,106 +25,108 @@ function Login({ setAuth }) {
       localStorage.setItem('token', response.data.token)
       localStorage.setItem('user', JSON.stringify(response.data.user))
       setAuth(true)
-      toast.success('🎉 Welcome back!', { duration: 2000 })
+      toast.success('🎉 Welcome back!')
       navigate('/dashboard')
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Login failed. Please try again.')
+      toast.error(err.response?.data?.message || 'Login failed')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="auth-container">
-      {/* Animated Background */}
-      <div className="auth-bg">
-        <div className="gradient-orb orb-1"></div>
-        <div className="gradient-orb orb-2"></div>
-        <div className="gradient-orb orb-3"></div>
+    <>
+      <div className="ultra-bg">
+        <div className="ultra-orb ultra-orb-1"></div>
+        <div className="ultra-orb ultra-orb-2"></div>
+        <div className="ultra-orb ultra-orb-3"></div>
       </div>
 
-      <motion.div
-        className="auth-card glass-card"
-        initial={{ scale: 0.9, opacity: 0, y: 20 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, type: 'spring' }}
-      >
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem' }}>
         <motion.div
-          className="auth-logo"
-          animate={{ 
-            rotate: [0, 5, -5, 0],
-            scale: [1, 1.1, 1]
-          }}
-          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+          initial={{ scale: 0.95, opacity: 0, y: 20 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, type: 'spring', stiffness: 100 }}
+          className="ultra-glass-card"
+          style={{ width: '100%', maxWidth: '450px', padding: '3rem 2.5rem', position: 'relative', zIndex: 1 }}
         >
-          💎
-        </motion.div>
-        
-        <h1 className="auth-title gradient-text">Promitto</h1>
-        <p className="auth-subtitle">Welcome back to your exclusive connection</p>
-
-        <form onSubmit={handleSubmit}>
-          <div className="input-group">
-            <label>Email or Username</label>
-            <motion.input
-              type="text"
-              name="identifier"
-              value={formData.identifier}
-              onChange={handleChange}
-              placeholder="Enter your email or username"
-              required
-              whileFocus={{ scale: 1.02 }}
-              className="premium-input"
-            />
-          </div>
-
-          <div className="input-group">
-            <label>Password</label>
-            <motion.input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="••••••••"
-              required
-              whileFocus={{ scale: 1.02 }}
-              className="premium-input"
-            />
-          </div>
-
-          <motion.button
-            type="submit"
-            className="btn-premium gradient-btn"
-            disabled={loading}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          {/* Logo */}
+          <motion.div
+            animate={{ rotate: [0, 5, -5, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            style={{ fontSize: '4rem', textAlign: 'center', marginBottom: '1.5rem' }}
           >
-            {loading ? (
-              <span className="loading-dots">
-                <span>.</span><span>.</span><span>.</span>
-              </span>
-            ) : (
-              'Login'
-            )}
-          </motion.button>
-        </form>
+            💎
+          </motion.div>
 
-        <motion.p
-          className="auth-link"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-        >
-          Don't have an account? <Link to="/signup" className="gradient-link">Sign up</Link>
-        </motion.p>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: '800', textAlign: 'center', marginBottom: '0.5rem', letterSpacing: '-0.02em' }}>
+            <span className="ultra-gradient-text">Promitto</span>
+          </h1>
+          
+          <p className="text-secondary" style={{ textAlign: 'center', marginBottom: '2.5rem', fontSize: '1.05rem' }}>
+            Welcome back to your exclusive connection
+          </p>
 
-        <div className="decorative-sparkles">
-          <span className="sparkle">✨</span>
-          <span className="sparkle">💫</span>
-          <span className="sparkle">⭐</span>
-        </div>
-      </motion.div>
-    </div>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div className="ultra-input-wrapper">
+              <input
+                type="text"
+                name="identifier"
+                value={formData.identifier}
+                onChange={handleChange}
+                placeholder=" "
+                required
+                className="ultra-input ultra-input-floating"
+              />
+              <label className="ultra-input-label">Email or Username</label>
+            </div>
+
+            <div className="ultra-input-wrapper">
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder=" "
+                required
+                className="ultra-input ultra-input-floating"
+              />
+              <label className="ultra-input-label">Password</label>
+            </div>
+
+            <motion.button
+              type="submit"
+              disabled={loading}
+              whileHover={{ scale: loading ? 1 : 1.02 }}
+              whileTap={{ scale: loading ? 1 : 0.98 }}
+              className="ultra-btn ultra-btn-primary"
+              style={{ width: '100%', marginTop: '0.5rem' }}
+            >
+              {loading ? (
+                <>
+                  <motion.span
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                  >
+                    ⏳
+                  </motion.span>
+                  <span>Logging in...</span>
+                </>
+              ) : (
+                'Login'
+              )}
+            </motion.button>
+          </form>
+
+          <p className="text-secondary" style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.95rem' }}>
+            Don't have an account?{' '}
+            <Link to="/signup" style={{ color: 'var(--accent-purple)', textDecoration: 'none', fontWeight: '600' }}>
+              Sign up
+            </Link>
+          </p>
+        </motion.div>
+      </div>
+    </>
   )
 }
 
