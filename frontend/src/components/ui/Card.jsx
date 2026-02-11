@@ -8,10 +8,10 @@ export function Card({ children, className, hover = false, glow = false, ...prop
         className={clsx('glow-card', className)}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 25 }}
         {...props}
       >
-        <div className="glow-card-inner p-6">
+        <div className="glow-card-inner p-8">
           {children}
         </div>
       </motion.div>
@@ -21,10 +21,10 @@ export function Card({ children, className, hover = false, glow = false, ...prop
   if (hover) {
     return (
       <motion.div
-        className={clsx('card-premium-hover p-6', className)}
+        className={clsx('card-premium-hover p-8', className)}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        whileHover={{ scale: 1.01 }}
+        whileHover={{ scale: 1.01, y: -2 }}
         transition={{ type: 'spring', stiffness: 400, damping: 25 }}
         {...props}
       >
@@ -35,10 +35,10 @@ export function Card({ children, className, hover = false, glow = false, ...prop
 
   return (
     <motion.div
-      className={clsx('card-premium p-6', className)}
+      className={clsx('card-premium p-8', className)}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+      transition={{ type: 'spring', stiffness: 260, damping: 25 }}
       {...props}
     >
       {children}
@@ -49,25 +49,25 @@ export function Card({ children, className, hover = false, glow = false, ...prop
 export function StatCard({ icon, value, label, delay = 0 }) {
   return (
     <motion.div
-      className="card-premium p-6 text-center"
+      className="group card-premium p-6 text-center hover:border-border-hover hover:shadow-elevated-lg hover:-translate-y-1 transition-all duration-300"
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ 
         type: 'spring', 
-        stiffness: 300, 
-        damping: 25,
+        stiffness: 260, 
+        damping: 20,
         delay: delay 
       }}
     >
       <motion.div
-        className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-accent-purple-glow mb-3"
-        whileHover={{ scale: 1.1, rotate: 5 }}
+        className="icon-container-hover mx-auto mb-4"
+        whileHover={{ scale: 1.05, rotate: 5 }}
         transition={{ type: 'spring', stiffness: 400, damping: 15 }}
       >
         {icon}
       </motion.div>
-      <div className="text-3xl font-bold text-text-primary mb-1">{value}</div>
-      <div className="text-sm text-text-tertiary">{label}</div>
+      <div className="text-4xl font-bold text-text-primary mb-2 tracking-tight">{value}</div>
+      <div className="text-sm font-medium text-text-tertiary">{label}</div>
     </motion.div>
   );
 }
