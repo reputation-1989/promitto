@@ -1,47 +1,73 @@
 import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
 
-export function Card({ children, className, hover = true, ...props }) {
-  const Component = hover ? motion.div : 'div';
-  
-  return (
-    <Component
-      className={clsx(
-        'glass-card p-6',
-        hover && 'glass-card-hover cursor-pointer',
-        className
-      )}
-      {...(hover && {
-        whileHover: { scale: 1.02, y: -4 },
-        whileTap: { scale: 0.98 },
-        transition: { type: 'spring', stiffness: 400, damping: 17 }
-      })}
-      {...props}
-    >
-      {children}
-    </Component>
-  );
-}
+export function Card({ children, className, hover = false, glow = false, ...props }) {
+  if (glow) {
+    return (
+      <motion.div
+        className={clsx('glow-card', className)}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        {...props}
+      >
+        <div className="glow-card-inner p-6">
+          {children}
+        </div>
+      </motion.div>
+    );
+  }
 
-export function GradientCard({ children, className, gradient = 'purple', ...props }) {
-  const gradients = {
-    purple: 'from-primary-600 to-primary-800',
-    pink: 'from-pink-500 to-purple-600',
-    blue: 'from-blue-500 to-cyan-500',
-  };
+  if (hover) {
+    return (
+      <motion.div
+        className={clsx('card-premium-hover p-6', className)}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ scale: 1.01 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+        {...props}
+      >
+        {children}
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
-      className={clsx(
-        'bg-gradient-to-br rounded-2xl p-6 shadow-premium-lg',
-        gradients[gradient],
-        className
-      )}
-      whileHover={{ scale: 1.02, y: -4 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+      className={clsx('card-premium p-6', className)}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       {...props}
     >
       {children}
+    </motion.div>
+  );
+}
+
+export function StatCard({ icon, value, label, delay = 0 }) {
+  return (
+    <motion.div
+      className="card-premium p-6 text-center"
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ 
+        type: 'spring', 
+        stiffness: 300, 
+        damping: 25,
+        delay: delay 
+      }}
+    >
+      <motion.div
+        className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-accent-purple-glow mb-3"
+        whileHover={{ scale: 1.1, rotate: 5 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+      >
+        {icon}
+      </motion.div>
+      <div className="text-3xl font-bold text-text-primary mb-1">{value}</div>
+      <div className="text-sm text-text-tertiary">{label}</div>
     </motion.div>
   );
 }
