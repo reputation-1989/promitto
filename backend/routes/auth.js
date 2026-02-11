@@ -250,6 +250,7 @@ router.post(
 
       // Update last active
       user.lastActive = Date.now();
+      user.isOnline = true;
       await user.save();
 
       // Create JWT token
@@ -297,6 +298,114 @@ router.get('/me', auth, async (req, res) => {
     res.json(user);
   } catch (error) {
     console.error('Get user error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// @route   PUT /api/auth/profile
+// @desc    Update user profile
+// @access  Private
+router.put(
+  '/profile',
+  [
+    auth,
+    body('displayName').optional().trim().notEmpty().withMessage('Display name cannot be empty'),
+    body('bio').optional().isLength({ max: 500 }).withMessage('Bio too long'),
+    body('age').optional().isInt({ min: 13, max: 120 }).withMessage('Invalid age'),
+    body('interests').optional().isArray().withMessage('Interests must be an array')
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { displayName, bio, interests, age, location } = req.body;
+
+    try {
+      const user = await User.findById(req.user.id);
+
+      if (displayName) user.displayName = displayName;
+      if (bio !== undefined) user.bio = bio;
+      if (interests) user.interests = interests;
+      if (age) user.age = age;
+      if (location) user.location = location;
+
+      await user.save();
+
+      res.json({
+        message: 'Profile updated successfully',
+        user: {
+          displayName: user.displayName,
+          bio: user.bio,
+          interests: user.interests,
+          age: user.age,
+          location: user.location
+        }
+      });
+    } catch (error) {
+      console.error('Update profile error:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  }
+);
+
+// @route   POST /api/auth/profile-picture
+// @desc    Upload profile picture (base64)
+// @access  Private
+router.post(
+  '/profile-picture',
+  [
+    auth,
+    body('image').notEmpty().withMessage('Image data is required')
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { image } = req.body;
+
+    try {
+      // Validate base64 image (should start with data:image/)
+      if (!image.startsWith('data:image/')) {
+        return res.status(400).json({ message: 'Invalid image format' });
+      }
+
+      // Check file size (limit to 5MB base64)
+      if (image.length > 5 * 1024 * 1024) {
+        return res.status(400).json({ message: 'Image too large (max 5MB)' });
+      }
+
+      const user = await User.findById(req.user.id);
+      user.profilePicture = image;
+      await user.save();
+
+      res.json({
+        message: 'Profile picture updated successfully',
+        profilePicture: user.profilePicture
+      });
+    } catch (error) {
+      console.error('Upload profile picture error:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  }
+);
+
+// @route   POST /api/auth/logout
+// @desc    Logout user (set offline)
+// @access  Private
+router.post('/logout', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    user.isOnline = false;
+    user.lastActive = Date.now();
+    await user.save();
+
+    res.json({ message: 'Logged out successfully' });
+  } catch (error) {
+    console.error('Logout error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
