@@ -1,12 +1,14 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
-import toast from 'react-hot-toast'
-import confetti from 'canvas-confetti'
-import api from '../utils/api'
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Phone, Key, User, Mail, Lock, ArrowRight, ArrowLeft, Sparkles } from 'lucide-react';
+import toast from 'react-hot-toast';
+import confetti from 'canvas-confetti';
+import api from '../utils/api';
+import { Button } from '../components/ui/Button';
 
 function Signup({ setAuth }) {
-  const [step, setStep] = useState(1)
+  const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     phoneNumber: '',
     otp: '',
@@ -15,55 +17,57 @@ function Signup({ setAuth }) {
     email: '',
     password: '',
     confirmPassword: ''
-  })
-  const [loading, setLoading] = useState(false)
-  const navigate = useNavigate()
+  });
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
-  }
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const sendOTP = async (e) => {
-    e.preventDefault()
-    setLoading(true)
+    e.preventDefault();
+    setLoading(true);
     try {
-      await api.post('/auth/send-otp', { phoneNumber: formData.phoneNumber })
-      toast.success('📱 OTP sent!')
-      setStep(2)
+      await api.post('/auth/send-otp', { phoneNumber: formData.phoneNumber });
+      toast.success('📱 OTP sent to your phone!');
+      setStep(2);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to send OTP')
+      toast.error(err.response?.data?.message || 'Failed to send OTP');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const verifyOTP = async (e) => {
-    e.preventDefault()
-    setLoading(true)
+    e.preventDefault();
+    setLoading(true);
     try {
       await api.post('/auth/verify-otp', {
         phoneNumber: formData.phoneNumber,
         otp: formData.otp
-      })
-      toast.success('✓ Verified!')
-      setStep(3)
+      });
+      toast.success('✓ Phone verified!');
+      setStep(3);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Invalid OTP')
+      toast.error(err.response?.data?.message || 'Invalid OTP');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleSignup = async (e) => {
-    e.preventDefault()
-
+    e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
-      toast.error('Passwords do not match')
-      return
+      toast.error('Passwords do not match');
+      return;
+    }
+    if (formData.password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      return;
     }
 
-    setLoading(true)
-
+    setLoading(true);
     try {
       const response = await api.post('/auth/signup', {
         username: formData.username,
@@ -71,78 +75,85 @@ function Signup({ setAuth }) {
         email: formData.email,
         phoneNumber: formData.phoneNumber,
         password: formData.password
-      })
+      });
       
-      localStorage.setItem('token', response.data.token)
-      localStorage.setItem('user', JSON.stringify(response.data.user))
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
       
       confetti({
-        particleCount: 200,
-        spread: 120,
+        particleCount: 150,
+        spread: 100,
         origin: { y: 0.6 },
-        colors: ['#667eea', '#764ba2', '#f093fb', '#4ade80']
-      })
+        colors: ['#a855f7', '#ec4899', '#8b5cf6']
+      });
       
-      toast.success('🎉 Welcome to Promitto!')
-      setAuth(true)
-      
-      setTimeout(() => {
-        navigate('/dashboard')
-      }, 1000)
+      toast.success('🎉 Welcome to Promitto!', { duration: 3000 });
+      setAuth(true);
+      setTimeout(() => navigate('/dashboard'), 1000);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Signup failed')
+      toast.error(err.response?.data?.message || 'Signup failed');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
+
+  const stepVariants = {
+    initial: { opacity: 0, x: 50 },
+    animate: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: -50 }
+  };
 
   return (
-    <>
-      <div className="ultra-bg">
-        <div className="ultra-orb ultra-orb-1"></div>
-        <div className="ultra-orb ultra-orb-2"></div>
-        <div className="ultra-orb ultra-orb-3"></div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-dark-50 via-dark-100 to-dark-50 p-4">
+      {/* Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <motion.div
+          className="absolute top-20 left-20 w-72 h-72 bg-primary-500/20 rounded-full blur-3xl"
+          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+          transition={{ duration: 8, repeat: Infinity }}
+        />
+        <motion.div
+          className="absolute bottom-20 right-20 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl"
+          animate={{ scale: [1.2, 1, 1.2], opacity: [0.3, 0.5, 0.3] }}
+          transition={{ duration: 8, repeat: Infinity, delay: 4 }}
+        />
       </div>
 
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem' }}>
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0, y: 20 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, type: 'spring', stiffness: 100 }}
-          className="ultra-glass-card"
-          style={{ width: '100%', maxWidth: '450px', padding: '3rem 2.5rem', position: 'relative', zIndex: 1 }}
-        >
-          <motion.div
-            animate={{ rotate: [0, 5, -5, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-            style={{ fontSize: '4rem', textAlign: 'center', marginBottom: '1.5rem' }}
-          >
-            💎
-          </motion.div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative z-10 w-full max-w-md"
+      >
+        {/* Logo */}
+        <motion.div className="text-center mb-8">
+          <div className="text-7xl mb-4">💎</div>
+          <h1 className="text-4xl font-bold text-gradient mb-2">Promitto</h1>
+          <p className="text-dark-600">Create your exclusive connection</p>
+        </motion.div>
 
-          <h1 style={{ fontSize: '2.5rem', fontWeight: '800', textAlign: 'center', marginBottom: '0.5rem', letterSpacing: '-0.02em' }}>
-            <span className="ultra-gradient-text">Promitto</span>
-          </h1>
-          
-          <p className="text-secondary" style={{ textAlign: 'center', marginBottom: '2rem', fontSize: '1.05rem' }}>
-            Create your exclusive connection
-          </p>
-
-          {/* Progress Bar */}
-          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2.5rem' }}>
-            {[1, 2, 3].map((s) => (
-              <motion.div
-                key={s}
-                animate={{
-                  backgroundColor: step >= s ? 'var(--accent-purple)' : 'var(--bg-tertiary)'
-                }}
-                style={{
-                  flex: 1,
-                  height: '4px',
-                  borderRadius: '2px',
-                  transition: 'background-color 0.3s'
-                }}
-              />
+        {/* Signup Card */}
+        <div className="glass-card p-8 space-y-6">
+          {/* Progress Steps */}
+          <div className="flex items-center justify-center gap-2 mb-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex items-center">
+                <motion.div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${
+                    step >= i
+                      ? 'bg-gradient-to-br from-primary-500 to-pink-500 text-white shadow-glow'
+                      : 'bg-white/5 text-dark-500'
+                  }`}
+                  animate={step === i ? { scale: [1, 1.1, 1] } : {}}
+                  transition={{ duration: 0.5 }}
+                >
+                  {i}
+                </motion.div>
+                {i < 3 && (
+                  <div className={`w-12 h-1 mx-1 rounded ${
+                    step > i ? 'bg-gradient-to-r from-primary-500 to-pink-500' : 'bg-white/5'
+                  }`} />
+                )}
+              </div>
             ))}
           </div>
 
@@ -150,181 +161,159 @@ function Signup({ setAuth }) {
             {step === 1 && (
               <motion.form
                 key="step1"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
                 onSubmit={sendOTP}
-                style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
+                variants={stepVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="space-y-4"
               >
-                <div className="ultra-input-wrapper">
-                  <input
-                    type="tel"
-                    name="phoneNumber"
-                    value={formData.phoneNumber}
-                    onChange={handleChange}
-                    placeholder=" "
-                    required
-                    className="ultra-input ultra-input-floating"
-                  />
-                  <label className="ultra-input-label">📱 Phone Number</label>
+                <div className="text-center mb-4">
+                  <h3 className="text-xl font-bold text-white">Phone Verification</h3>
+                  <p className="text-dark-600 text-sm">Enter your phone number</p>
                 </div>
-                <motion.button
-                  type="submit"
-                  disabled={loading}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="ultra-btn ultra-btn-primary"
-                  style={{ width: '100%' }}
-                >
-                  {loading ? 'Sending...' : 'Send OTP'}
-                </motion.button>
+                <div>
+                  <label className="block text-sm font-medium text-dark-700 mb-2">Phone Number</label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-500 w-5 h-5" />
+                    <input
+                      type="tel"
+                      name="phoneNumber"
+                      value={formData.phoneNumber}
+                      onChange={handleChange}
+                      placeholder="+919876543210"
+                      className="input-premium pl-11 text-white"
+                      required
+                    />
+                  </div>
+                </div>
+                <Button type="submit" icon={<ArrowRight size={20} />} loading={loading} className="w-full">
+                  {loading ? 'Sending OTP...' : 'Send OTP'}
+                </Button>
               </motion.form>
             )}
 
             {step === 2 && (
               <motion.form
                 key="step2"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
                 onSubmit={verifyOTP}
-                style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
+                variants={stepVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="space-y-4"
               >
-                <div className="ultra-input-wrapper">
-                  <input
-                    type="text"
-                    name="otp"
-                    value={formData.otp}
-                    onChange={handleChange}
-                    placeholder=" "
-                    maxLength="6"
-                    required
-                    className="ultra-input ultra-input-floating"
-                    style={{ textAlign: 'center', fontSize: '1.5rem', letterSpacing: '0.5rem' }}
-                  />
-                  <label className="ultra-input-label">🔐 Enter OTP</label>
+                <div className="text-center mb-4">
+                  <h3 className="text-xl font-bold text-white">Enter OTP</h3>
+                  <p className="text-dark-600 text-sm">6-digit code sent to your phone</p>
                 </div>
-                <motion.button
-                  type="submit"
-                  disabled={loading}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="ultra-btn ultra-btn-primary"
-                  style={{ width: '100%' }}
-                >
-                  {loading ? 'Verifying...' : 'Verify OTP'}
-                </motion.button>
-                <motion.button
-                  type="button"
-                  onClick={() => setStep(1)}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="ultra-btn ultra-btn-ghost"
-                  style={{ width: '100%' }}
-                >
-                  Change Number
-                </motion.button>
+                <div>
+                  <label className="block text-sm font-medium text-dark-700 mb-2">OTP Code</label>
+                  <div className="relative">
+                    <Key className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-500 w-5 h-5" />
+                    <input
+                      type="text"
+                      name="otp"
+                      value={formData.otp}
+                      onChange={handleChange}
+                      placeholder="Enter 6-digit code"
+                      maxLength="6"
+                      className="input-premium pl-11 text-white text-center text-2xl tracking-widest font-bold"
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <Button type="button" variant="secondary" onClick={() => setStep(1)} icon={<ArrowLeft size={20} />}>
+                    Back
+                  </Button>
+                  <Button type="submit" icon={<ArrowRight size={20} />} loading={loading} className="flex-1">
+                    {loading ? 'Verifying...' : 'Verify'}
+                  </Button>
+                </div>
               </motion.form>
             )}
 
             {step === 3 && (
               <motion.form
                 key="step3"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
                 onSubmit={handleSignup}
-                style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}
+                variants={stepVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="space-y-4"
               >
-                <div className="ultra-input-wrapper">
+                <div className="text-center mb-4">
+                  <h3 className="text-xl font-bold text-white">Create Account</h3>
+                  <p className="text-dark-600 text-sm">Complete your profile</p>
+                </div>
+                <div className="space-y-3">
                   <input
                     type="text"
                     name="username"
                     value={formData.username}
                     onChange={handleChange}
-                    placeholder=" "
+                    placeholder="Username"
+                    className="input-premium text-white"
                     required
-                    className="ultra-input ultra-input-floating"
                   />
-                  <label className="ultra-input-label">Username</label>
-                </div>
-
-                <div className="ultra-input-wrapper">
                   <input
                     type="text"
                     name="displayName"
                     value={formData.displayName}
                     onChange={handleChange}
-                    placeholder=" "
+                    placeholder="Display Name"
+                    className="input-premium text-white"
                     required
-                    className="ultra-input ultra-input-floating"
                   />
-                  <label className="ultra-input-label">Display Name</label>
-                </div>
-
-                <div className="ultra-input-wrapper">
                   <input
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    placeholder=" "
+                    placeholder="Email"
+                    className="input-premium text-white"
                     required
-                    className="ultra-input ultra-input-floating"
                   />
-                  <label className="ultra-input-label">Email</label>
-                </div>
-
-                <div className="ultra-input-wrapper">
                   <input
                     type="password"
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
-                    placeholder=" "
+                    placeholder="Password (min 6 characters)"
+                    className="input-premium text-white"
                     required
-                    className="ultra-input ultra-input-floating"
                   />
-                  <label className="ultra-input-label">Password</label>
-                </div>
-
-                <div className="ultra-input-wrapper">
                   <input
                     type="password"
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    placeholder=" "
+                    placeholder="Confirm Password"
+                    className="input-premium text-white"
                     required
-                    className="ultra-input ultra-input-floating"
                   />
-                  <label className="ultra-input-label">Confirm Password</label>
                 </div>
-
-                <motion.button
-                  type="submit"
-                  disabled={loading}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="ultra-btn ultra-btn-primary"
-                  style={{ width: '100%' }}
-                >
-                  {loading ? 'Creating Account...' : '🎉 Create Account'}
-                </motion.button>
+                <Button type="submit" icon={<Sparkles size={20} />} loading={loading} className="w-full">
+                  {loading ? 'Creating Account...' : 'Create Account'}
+                </Button>
               </motion.form>
             )}
           </AnimatePresence>
 
-          <p className="text-secondary" style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.95rem' }}>
-            Already have an account?{' '}
-            <Link to="/login" style={{ color: 'var(--accent-purple)', textDecoration: 'none', fontWeight: '600' }}>
-              Login
-            </Link>
-          </p>
-        </motion.div>
-      </div>
-    </>
-  )
+          <div className="text-center pt-4 border-t border-white/5">
+            <p className="text-dark-600">
+              Already have an account?{' '}
+              <Link to="/login" className="text-primary-400 hover:text-primary-300 font-semibold">
+                Login
+              </Link>
+            </p>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
 }
 
-export default Signup
+export default Signup;
