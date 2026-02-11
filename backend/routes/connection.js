@@ -3,6 +3,7 @@ const router = express.Router();
 const auth = require('../middleware/auth');
 const User = require('../models/User');
 const Message = require('../models/Message');
+const ConnectionLevel = require('../models/ConnectionLevel');
 const { body, validationResult } = require('express-validator');
 
 // @route   GET /api/connection/search/:username
@@ -22,7 +23,7 @@ router.get('/search/:username', auth, async (req, res) => {
 
     // Find user by username
     const user = await User.findOne({ username: username.toLowerCase() })
-      .select('username displayName profilePicture bio interests age location.city location.country connectionStatus');
+      .select('username displayName profilePicture connectionStatus');
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -36,18 +37,14 @@ router.get('/search/:username', auth, async (req, res) => {
       });
     }
 
-    // User is available
+    // User is available - HIDE profile details until connected
     res.json({
       available: true,
       user: {
         id: user._id,
         username: user.username,
         displayName: user.displayName,
-        profilePicture: user.profilePicture,
-        bio: user.bio,
-        interests: user.interests,
-        age: user.age,
-        location: user.location
+        profilePicture: user.profilePicture
       }
     });
   } catch (error) {
@@ -158,6 +155,20 @@ router.post('/accept-request', auth, async (req, res) => {
     sender.connectionCount += 1;
     await sender.save();
 
+    // CREATE CONNECTION LEVEL
+    const connectionLevel = new ConnectionLevel({
+      user1: sender._id,
+      user2: recipient._id,
+      level: 1,
+      points: 0,
+      pointsToNextLevel: 100,
+      connectedAt: now
+    });
+    await connectionLevel.save();
+
+    // Award initial connection points
+    await connectionLevel.addPoints(50, 'Connection established');
+
     res.json({
       message: 'Connection request accepted',
       connectedUser: {
@@ -165,6 +176,10 @@ router.post('/accept-request', auth, async (req, res) => {
         username: sender.username,
         displayName: sender.displayName,
         profilePicture: sender.profilePicture
+      },
+      connectionLevel: {
+        level: connectionLevel.level,
+        points: connectionLevel.points
       }
     });
   } catch (error) {
@@ -220,6 +235,14 @@ router.post('/break', auth, async (req, res) => {
 
     const partner = await User.findById(user.connectedTo);
 
+    // DELETE CONNECTION LEVEL - ALL PROGRESS LOST
+    await ConnectionLevel.deleteMany({
+      $or: [
+        { user1: user._id, user2: user.connectedTo },
+        { user1: user.connectedTo, user2: user._id }
+      ]
+    });
+
     // Break connection for both users
     user.connectionStatus = 'none';
     user.connectedTo = null;
@@ -233,7 +256,7 @@ router.post('/break', auth, async (req, res) => {
       await partner.save();
     }
 
-    res.json({ message: 'Connection broken successfully' });
+    res.json({ message: 'Connection broken successfully. All progress lost.' });
   } catch (error) {
     console.error('Break connection error:', error);
     res.status(500).json({ message: 'Server error' });
@@ -247,7 +270,7 @@ router.get('/status', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id)
       .populate('connectedTo', 'username displayName profilePicture phoneNumbers bio interests age location isOnline')
-      .populate('pendingRequest', 'username displayName profilePicture bio interests age location');
+      .populate('pendingRequest', 'username displayName profilePicture');
 
     // Mark messages as delivered when user opens app
     if (user.connectionStatus === 'connected' && user.connectedTo) {
@@ -333,9 +356,51 @@ router.post(
       user.totalMessagesSent += 1;
       await user.save();
 
+      // AWARD POINTS FOR FIRST MESSAGE
+      let connectionLevel = await ConnectionLevel.findOne({
+        $or: [
+          { user1: user._id, user2: user.connectedTo },
+          { user1: user.connectedTo, user2: user._id }
+        ]
+      });
+
+      if (connectionLevel) {
+        connectionLevel.totalMessages += 1;
+        
+        // First message bonus
+        if (connectionLevel.totalMessages === 1) {
+          await connectionLevel.addPoints(10, 'First message');
+        }
+        
+        // Update streak
+        await connectionLevel.updateStreak();
+        
+        // Check for quality conversation (5+ messages in conversation)
+        const recentMessages = await Message.countDocuments({
+          $or: [
+            { sender: user._id, receiver: user.connectedTo },
+            { sender: user.connectedTo, receiver: user._id }
+          ],
+          createdAt: { $gte: new Date(Date.now() - 3600000) } // Last hour
+        });
+        
+        if (recentMessages >= 5 && recentMessages % 5 === 0) {
+          connectionLevel.qualityConversations += 1;
+          await connectionLevel.addPoints(20, 'Quality conversation');
+        }
+        
+        await connectionLevel.save();
+      }
+
       const populatedMessage = await Message.findById(message._id)
         .populate('sender', 'username displayName profilePicture')
         .populate('receiver', 'username displayName profilePicture');
+
+      // Emit real-time message via Socket.io
+      const io = req.app.get('io');
+      if (io) {
+        io.to(user.connectedTo.toString()).emit('receiveMessage', populatedMessage);
+      }
 
       res.json(populatedMessage);
     } catch (error) {
@@ -362,39 +427,6 @@ router.post('/messages/mark-read', auth, async (req, res) => {
     res.json({ message: 'Messages marked as read' });
   } catch (error) {
     console.error('Mark read error:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// @route   GET /api/connection/discover
-// @desc    Discover available users (better discovery)
-// @access  Private
-router.get('/discover', auth, async (req, res) => {
-  try {
-    const currentUser = await User.findById(req.user.id);
-
-    if (currentUser.connectionStatus !== 'none') {
-      return res.status(400).json({
-        message: 'You already have a pending request or active connection'
-      });
-    }
-
-    const limit = parseInt(req.query.limit) || 20;
-    const skip = parseInt(req.query.skip) || 0;
-
-    // Find available users (not connected, no pending requests)
-    const users = await User.find({
-      _id: { $ne: currentUser._id },
-      connectionStatus: 'none',
-      blockedUsers: { $ne: currentUser._id }
-    })
-    .select('username displayName profilePicture bio interests age location.city location.country')
-    .limit(limit)
-    .skip(skip);
-
-    res.json(users);
-  } catch (error) {
-    console.error('Discover error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
