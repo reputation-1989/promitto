@@ -26,6 +26,9 @@ const io = socketIo(server, {
   }
 });
 
+// Make io accessible to routes
+app.set('io', io);
+
 // Trust proxy for GitHub Codespaces / reverse proxy environments
 app.set('trust proxy', 1);
 
@@ -52,6 +55,7 @@ app.use('/api', apiLimiter);
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/connection', require('./routes/connection'));
+app.use('/api/level', require('./routes/level'));
 
 // Socket.IO Connection with error handling
 io.on('connection', (socket) => {
@@ -150,6 +154,7 @@ server.listen(PORT, () => {
   console.log(`🔒 Security: Enabled`);
   console.log(`⚡ Compression: Enabled`);
   console.log(`🛡️  Rate Limiting: Active`);
+  console.log(`💎 Connection Level System: Active`);
 });
 
 // Graceful shutdown
