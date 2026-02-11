@@ -19,8 +19,8 @@ export function Button({
 
   const sizes = {
     sm: 'px-4 py-2 text-xs',
-    md: 'px-6 py-2.5 text-sm',
-    lg: 'px-8 py-3 text-base',
+    md: 'px-6 py-3 text-sm',
+    lg: 'px-8 py-4 text-base',
   };
 
   return (
@@ -32,7 +32,7 @@ export function Button({
       )}
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
-      disabled={loading}
+      disabled={loading || props.disabled}
       {...props}
     >
       {loading ? (
@@ -42,8 +42,8 @@ export function Button({
         </>
       ) : (
         <>
-          {icon && <span>{icon}</span>}
-          {children}
+          {icon && <span className="flex-shrink-0">{icon}</span>}
+          <span className="font-semibold">{children}</span>
         </>
       )}
     </motion.button>
