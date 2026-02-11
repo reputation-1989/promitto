@@ -10,6 +10,7 @@ const apiLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
+  trustProxy: true, // Trust proxy headers for Codespaces/Heroku/etc
 });
 
 // Strict limiter for auth endpoints - 5 attempts per 15 minutes
@@ -20,7 +21,8 @@ const authLimiter = rateLimit({
   message: {
     success: false,
     message: 'Too many authentication attempts, please try again later.'
-  }
+  },
+  trustProxy: true,
 });
 
 // OTP limiter - 3 OTP requests per hour
@@ -30,7 +32,8 @@ const otpLimiter = rateLimit({
   message: {
     success: false,
     message: 'Too many OTP requests. Please try again later.'
-  }
+  },
+  trustProxy: true,
 });
 
 // Message limiter - 500 messages per hour (prevent spam)
@@ -40,7 +43,8 @@ const messageLimiter = rateLimit({
   message: {
     success: false,
     message: 'Message limit reached. Please slow down.'
-  }
+  },
+  trustProxy: true,
 });
 
 module.exports = {
