@@ -1,12 +1,15 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Loader2 } from 'lucide-react';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import Search from './pages/Search';
 import Chat from './pages/Chat';
 import Profile from './pages/Profile';
+import { BackgroundEffects } from './components/BackgroundEffects';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -22,11 +25,17 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-dark-50">
-        <div className="text-center space-y-4">
-          <div className="text-7xl animate-float">💎</div>
-          <p className="text-dark-600 text-xl font-semibold">Loading Promitto...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <BackgroundEffects />
+        <motion.div
+          className="relative z-10 text-center space-y-4"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+        >
+          <div className="text-7xl mb-4">💎</div>
+          <Loader2 className="w-8 h-8 animate-spin text-accent-purple mx-auto" />
+          <p className="text-text-secondary text-lg font-semibold">Loading Promitto...</p>
+        </motion.div>
       </div>
     );
   }
@@ -37,14 +46,15 @@ function App() {
         position="bottom-right"
         toastOptions={{
           duration: 3000,
-          className: 'glass-card',
           style: {
-            background: 'rgba(255, 255, 255, 0.05)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            background: '#111111',
+            backdropFilter: 'blur(24px)',
+            border: '1px solid rgba(255, 255, 255, 0.06)',
             color: '#fff',
-            padding: '16px 20px',
-            borderRadius: '16px',
+            padding: '12px 16px',
+            borderRadius: '12px',
+            fontSize: '14px',
+            boxShadow: '0 8px 24px 0 rgba(0, 0, 0, 0.5), 0 2px 6px 0 rgba(0, 0, 0, 0.4)',
           },
         }}
       />
